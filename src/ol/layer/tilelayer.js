@@ -25,6 +25,7 @@ ol.layer.Tile = function(options) {
 
   this.setPreload(
       goog.isDef(options.preload) ? options.preload : 0);
+  this.lookupEnabled_ = false;
 
 };
 goog.inherits(ol.layer.Tile, ol.layer.Layer);
@@ -54,3 +55,7 @@ goog.exportProperty(
     ol.layer.Tile.prototype,
     'setPreload',
     ol.layer.Tile.prototype.setPreload);
+
+
+
+

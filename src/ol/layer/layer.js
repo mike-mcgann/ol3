@@ -37,6 +37,8 @@ ol.layer.Layer = function(options) {
    */
   this.source_ = options.source;
 
+  this.setLookup(null);
+
   goog.events.listen(this.source_, goog.events.EventType.CHANGE,
       this.handleSourceChange_, false, this);
 
@@ -92,3 +94,23 @@ ol.layer.Layer.prototype.getSourceState = function() {
 ol.layer.Layer.prototype.handleSourceChange_ = function() {
   this.dispatchChangeEvent();
 };
+
+
+ol.layer.Layer.prototype.getLookup = function() {
+    return this.get("lookup");
+};
+goog.exportProperty(
+    ol.layer.Layer.prototype,
+    'getLookup',
+    ol.layer.Layer.prototype.getLookup);
+
+
+ol.layer.Layer.prototype.setLookup = function(lookup) {
+    this.set("lookup", lookup);
+};
+goog.exportProperty(
+    ol.layer.Layer.prototype,
+    'setLookup',
+    ol.layer.Layer.prototype.setLookup);
+
+

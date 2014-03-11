@@ -31,6 +31,12 @@ goog.require('ol.structs.Buffer');
 ol.renderer.webgl.TileLayer = function(mapRenderer, tileLayer) {
 
   goog.base(this, mapRenderer, tileLayer);
+  this.tileLayer_ = tileLayer;
+  this.dirty_ = false;
+  var self = this;
+  this.tileLayer_.on("change:lookup", function() {
+    self.dirty_ = true;
+  });
 
   /**
    * @private
@@ -144,12 +150,12 @@ ol.renderer.webgl.TileLayer.prototype.prepareFrame =
       extent, tileResolution);
 
   var framebufferExtent;
-  if (!goog.isNull(this.renderedTileRange_) &&
+  if (!this.dirty_ && !goog.isNull(this.renderedTileRange_) &&
       this.renderedTileRange_.equals(tileRange) &&
       this.renderedRevision_ == tileSource.getRevision()) {
     framebufferExtent = this.renderedFramebufferExtent_;
   } else {
-
+    this.dirty_ = false;
     var tileRangeSize = tileRange.getSize();
 
     var maxDimension = Math.max(
@@ -186,6 +192,11 @@ ol.renderer.webgl.TileLayer.prototype.prepareFrame =
     gl.vertexAttribPointer(
         this.locations_.a_texCoord, 2, goog.webgl.FLOAT, false, 16, 8);
     gl.uniform1i(this.locations_.u_texture, 0);
+    if ( this.tileLayer_.getLookup() ) {
+        gl.uniform1i(this.locations_.u_enabled, 1);
+    } else {
+        gl.uniform1i(this.locations_.u_enabled, 0);
+    }
 
     /**
      * @type {Object.<number, Object.<string, ol.Tile>>}

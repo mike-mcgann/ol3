@@ -19,7 +19,15 @@ void main(void) {
 
 //! FRAGMENT
 uniform sampler2D u_texture;
+uniform int u_enabled;
 
 void main(void) {
-  gl_FragColor = texture2D(u_texture, v_texCoord);
-}
+  if ( u_enabled == 1 ) {
+      vec4 color = texture2D(u_texture, v_texCoord);
+      color.b = 0.0;
+      color.g = 0.0;
+      gl_FragColor = color;
+  } else {
+      gl_FragColor = texture2D(u_texture, v_texCoord);
+  }
+} 

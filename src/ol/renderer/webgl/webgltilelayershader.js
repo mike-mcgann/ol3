@@ -21,14 +21,14 @@ goog.addSingletonGetter(ol.renderer.webgl.tilelayer.shader.Fragment);
  * @const
  * @type {string}
  */
-ol.renderer.webgl.tilelayer.shader.Fragment.DEBUG_SOURCE = 'precision mediump float;\nvarying vec2 v_texCoord;\n\n\nuniform sampler2D u_texture;\n\nvoid main(void) {\n  gl_FragColor = texture2D(u_texture, v_texCoord);\n}\n';
+ol.renderer.webgl.tilelayer.shader.Fragment.DEBUG_SOURCE = 'precision mediump float;\nvarying vec2 v_texCoord;\n\n\nuniform sampler2D u_texture;\nuniform int u_enabled;\n\nvoid main(void) {\n  if ( u_enabled == 1 ) {\n      vec4 color = texture2D(u_texture, v_texCoord);\n      color.b = 0.0;\n      color.g = 0.0;\n      gl_FragColor = color;\n  } else {\n      gl_FragColor = texture2D(u_texture, v_texCoord);\n  }\n} \n';
 
 
 /**
  * @const
  * @type {string}
  */
-ol.renderer.webgl.tilelayer.shader.Fragment.OPTIMIZED_SOURCE = 'precision mediump float;varying vec2 a;uniform sampler2D e;void main(void){gl_FragColor=texture2D(e,a);}';
+ol.renderer.webgl.tilelayer.shader.Fragment.OPTIMIZED_SOURCE = 'precision mediump float;varying vec2 a;uniform sampler2D e;uniform int f;void main(void){if(f==1){ vec4 color=texture2D(e,a);color.b=0.0;color.g=0.0;gl_FragColor=color;}else{gl_FragColor=texture2D(e,a);}}';
 
 
 /**
@@ -84,6 +84,12 @@ ol.renderer.webgl.tilelayer.shader.Vertex.SOURCE = goog.DEBUG ?
  * @struct
  */
 ol.renderer.webgl.tilelayer.shader.Locations = function(gl, program) {
+
+  /**
+   * @type {WebGLUniformLocation}
+   */
+  this.u_enabled = gl.getUniformLocation(
+      program, goog.DEBUG ? 'u_enabled' : 'f');
 
   /**
    * @type {WebGLUniformLocation}
