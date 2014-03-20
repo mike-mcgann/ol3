@@ -19,14 +19,26 @@ void main(void) {
 
 //! FRAGMENT
 uniform sampler2D u_texture;
+uniform sampler2D u_sourceMap;
+uniform sampler2D u_targetMap;
 uniform int u_enabled;
 
 void main(void) {
   if ( u_enabled == 1 ) {
-      vec4 color = texture2D(u_texture, v_texCoord);
-      color.b = 0.0;
-      color.g = 0.0;
-      gl_FragColor = color;
+       vec4 color = texture2D(u_texture, v_texCoord);
+       if ( color.a == 0.0 ) {
+           gl_FragColor = color;
+       } else {
+           float newIndex = 0.0;
+           for ( float i = 0.00195312; i < 1.0; i += 0.00390625 ) {
+              vec4 other = texture2D(u_sourceMap, vec2(i, 0.5));
+              if ( color.r == other.r && color.g == other.g && color.b == other.b && color.a == other.a ) {
+                  newIndex = i;
+                  break;
+              }
+           }
+           gl_FragColor = texture2D(u_targetMap, vec2(newIndex, 0.5));
+       }
   } else {
       gl_FragColor = texture2D(u_texture, v_texCoord);
   }

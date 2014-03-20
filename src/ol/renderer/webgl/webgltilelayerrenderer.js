@@ -192,8 +192,64 @@ ol.renderer.webgl.TileLayer.prototype.prepareFrame =
     gl.vertexAttribPointer(
         this.locations_.a_texCoord, 2, goog.webgl.FLOAT, false, 16, 8);
     gl.uniform1i(this.locations_.u_texture, 0);
-    if ( this.tileLayer_.getLookup() ) {
+    var lookup = this.tileLayer_.getLookup();
+    if ( lookup ) {
         gl.uniform1i(this.locations_.u_enabled, 1);
+         // Source map
+        gl.uniform1i(this.locations_.u_sourceMap, 1);
+        var sourceMap = new Uint8Array(256 * 4);
+        var sourceColors = lookup.source;
+        for ( var i = 0; i < 256; i++ ) {
+            var sc;
+            if ( i < sourceColors.length ) {
+                sc = sourceColors[i] + "ff";
+            } else {
+                sc = "00000000";
+            }
+            sourceMap[i * 4 + 0] = parseInt(sc.substr(0, 2), 16);
+            sourceMap[i * 4 + 1] = parseInt(sc.substr(2, 2), 16);
+            sourceMap[i * 4 + 2] = parseInt(sc.substr(4, 2), 16);
+            sourceMap[i * 4 + 3] = parseInt(sc.substr(6, 2), 16);
+        }
+        gl.activeTexture(gl.TEXTURE1);
+        var sourceMapTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, sourceMapTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
+                gl.UNSIGNED_BYTE, sourceMap);
+
+        // Target Map
+        gl.uniform1i(this.locations_.u_targetMap, 2);
+        var targetMap = new Uint8Array(256 * 4);
+        var targetColors = lookup.target;
+        for ( var i = 0; i < targetColors.length; i++ ) {
+            var tc;
+            if ( i < targetColors.length ) {
+                tc = targetColors[i];
+            } else {
+                tc = "000000";
+            }
+            targetMap[i * 4 + 0] = parseInt(tc.substr(0, 2), 16);
+            targetMap[i * 4 + 1] = parseInt(tc.substr(2, 2), 16);
+            targetMap[i * 4 + 2] = parseInt(tc.substr(4, 2), 16);
+            targetMap[i * 4 + 3] = sourceMap[i * 4 + 3];
+        }
+        window.console.log(sourceMap, targetMap);
+        //origTarget = new Uint8Array(265 * 4);
+        gl.activeTexture(gl.TEXTURE2);
+        var targetMapTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, targetMapTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
+                gl.UNSIGNED_BYTE, targetMap);
+
+        gl.activeTexture(gl.TEXTURE0);
     } else {
         gl.uniform1i(this.locations_.u_enabled, 0);
     }

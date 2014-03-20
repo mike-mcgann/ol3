@@ -21,14 +21,14 @@ goog.addSingletonGetter(ol.renderer.webgl.tilelayer.shader.Fragment);
  * @const
  * @type {string}
  */
-ol.renderer.webgl.tilelayer.shader.Fragment.DEBUG_SOURCE = 'precision mediump float;\nvarying vec2 v_texCoord;\n\n\nuniform sampler2D u_texture;\nuniform int u_enabled;\n\nvoid main(void) {\n  if ( u_enabled == 1 ) {\n      vec4 color = texture2D(u_texture, v_texCoord);\n      color.b = 0.0;\n      color.g = 0.0;\n      gl_FragColor = color;\n  } else {\n      gl_FragColor = texture2D(u_texture, v_texCoord);\n  }\n} \n';
+ol.renderer.webgl.tilelayer.shader.Fragment.DEBUG_SOURCE = 'precision mediump float;\nvarying vec2 v_texCoord;\n\n\nuniform sampler2D u_texture;\nuniform sampler2D u_sourceMap;\nuniform sampler2D u_targetMap;\nuniform int u_enabled;\n\nvoid main(void) {\n  if ( u_enabled == 1 ) {\n       vec4 color = texture2D(u_texture, v_texCoord);\n       if ( color.a == 0.0 ) {\n           gl_FragColor = color;\n       } else {\n           float newIndex = 0.0;\n           for ( float i = 0.00195312; i < 1.0; i += 0.00390625 ) {\n              vec4 other = texture2D(u_sourceMap, vec2(i, 0.5));\n              if ( color.r == other.r && color.g == other.g && color.b == other.b && color.a == other.a ) {\n                  newIndex = i;\n                  break;\n              }\n           }\n           gl_FragColor = texture2D(u_targetMap, vec2(newIndex, 0.5));\n       }\n  } else {\n      gl_FragColor = texture2D(u_texture, v_texCoord);\n  }\n} \n';
 
 
 /**
  * @const
  * @type {string}
  */
-ol.renderer.webgl.tilelayer.shader.Fragment.OPTIMIZED_SOURCE = 'precision mediump float;varying vec2 a;uniform sampler2D e;uniform int f;void main(void){if(f==1){ vec4 color=texture2D(e,a);color.b=0.0;color.g=0.0;gl_FragColor=color;}else{gl_FragColor=texture2D(e,a);}}';
+ol.renderer.webgl.tilelayer.shader.Fragment.OPTIMIZED_SOURCE = 'precision mediump float;varying vec2 a;uniform sampler2D e;uniform sampler2D f;uniform sampler2D g;uniform int h;void main(void){if(h==1){ vec4 color=texture2D(e,a);if(color.a==0.0){ gl_FragColor=color;}else{float newIndex=0.0;for(float i=0.00195312;i<1.0;i+=0.00390625){ vec4 other=texture2D(f,vec2(i,0.5));if(color.r==other.r&&color.g==other.g&&color.b==other.b&&color.a==other.a){ newIndex=i;break;}} gl_FragColor=texture2D(g,vec2(newIndex,0.5));}} else{gl_FragColor=texture2D(e,a);}}';
 
 
 /**
@@ -89,7 +89,19 @@ ol.renderer.webgl.tilelayer.shader.Locations = function(gl, program) {
    * @type {WebGLUniformLocation}
    */
   this.u_enabled = gl.getUniformLocation(
-      program, goog.DEBUG ? 'u_enabled' : 'f');
+      program, goog.DEBUG ? 'u_enabled' : 'h');
+
+  /**
+   * @type {WebGLUniformLocation}
+   */
+  this.u_sourceMap = gl.getUniformLocation(
+      program, goog.DEBUG ? 'u_sourceMap' : 'f');
+
+  /**
+   * @type {WebGLUniformLocation}
+   */
+  this.u_targetMap = gl.getUniformLocation(
+      program, goog.DEBUG ? 'u_targetMap' : 'g');
 
   /**
    * @type {WebGLUniformLocation}
