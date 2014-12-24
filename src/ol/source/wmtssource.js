@@ -157,7 +157,7 @@ ol.source.WMTS = function(options) {
         var y = -tileCoord[2] - 1;
         var tileExtent = tileGrid.getTileCoordExtent(tileCoord, tmpExtent);
         var extent = projection.getExtent();
-
+        /*
         if (!goog.isNull(extent) && projection.isGlobal()) {
           var numCols = Math.ceil(
               ol.extent.getWidth(extent) /
@@ -168,6 +168,7 @@ ol.source.WMTS = function(options) {
           tmpTileCoord[2] = tileCoord[2];
           tileExtent = tileGrid.getTileCoordExtent(tmpTileCoord, tmpExtent);
         }
+        */
         if (!ol.extent.intersects(tileExtent, extent) ||
             ol.extent.touches(tileExtent, extent)) {
           return null;
